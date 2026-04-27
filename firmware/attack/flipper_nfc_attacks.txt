@@ -1,0 +1,92 @@
+NFC Access Control Lab — Flipper Zero Attack Scripts
+Author: Cameron Peete
+Format: Flipper NFC App / BadNFC compatible
+
+These scripts use the Flipper Zero's NFC module to execute attacks
+against each firmware phase. Load via qFlipper → SD Card → nfc/
+
+================================================================
+FILE: phase1_uid_clone.nfc
+PURPOSE: Clone a scanned card UID and replay it
+================================================================
+
+Filetype: Flipper NFC device
+Version: 4
+Device type: MIFARE Classic
+# Scan target card first with Flipper NFC app
+# Then save as .nfc file — Flipper auto-emulates on read
+UID: DE AD BE EF
+ATQA: 00 04
+SAK: 08
+Mifare Classic type: 1K
+Data format version: 2
+# Block data captured from target card
+Block 0: DE AD BE EF 1E 08 04 00 00 00 00 00 00 00 00 00
+
+================================================================
+FILE: phase2_lockout_bypass.nfc  
+PURPOSE: Demonstrate lockout bypass via UID rotation
+CONCEPT: Phase 2 tracks fail count per UID
+         Rotating UIDs resets the fail counter
+         Attacker uses 3 attempts per UID × N UIDs = unlimited tries
+================================================================
+
+# Attack sequence — rotate through UIDs to bypass lockout:
+# 1. Try UID_A 3 times → locked out
+# 2. Switch to UID_B 3 times → different counter, not locked
+# 3. Switch to UID_C 3 times → still not locked
+# This shows Phase 2 lockout is per-UID, not per-reader
+
+# DEFENSE: Track lockout by reader session, not just UID
+#          Or implement global rate limiting across all UIDs
+
+================================================================
+FILE: phase3_replay_fail.nfc
+PURPOSE: Demonstrate replay attack failure on Phase 3
+CONCEPT: Capture Phase 3 auth exchange, attempt replay
+         Shows why random challenge prevents replay
+================================================================
+
+# Step 1: Capture auth exchange with Flipper in sniff mode
+# Flipper → NFC → Extra Actions → NFC Sniff
+# Place Flipper between card and reader during valid auth
+
+# Captured exchange (example):
+# Reader → Card: CHALLENGE = 4E46434C616253656372657420...
+# Card → Reader: MAC = 8f3a2b1c...
+
+# Step 2: Attempt replay — will fail
+# Replay old MAC against new challenge → HMAC mismatch → denied
+
+# LESSON: Each auth session has a unique challenge
+#         Old MAC is mathematically invalid for new challenge
+#         HMAC(secret, old_challenge) ≠ HMAC(secret, new_challenge)
+
+================================================================
+FLIPPER ZERO NFC ATTACK WORKFLOW
+================================================================
+
+1. RECON PHASE
+   NFC → Read → Scan target card
+   → Note UID, ATQA, SAK, card type
+   → Save to SD card
+
+2. EMULATION PHASE  
+   NFC → Saved cards → Select card → Emulate
+   → Present Flipper to reader as cloned card
+   → Observe grant/deny
+
+3. SNIFF PHASE (Phase 3 analysis)
+   NFC → Extra Actions → NFC Sniff
+   → Place between card and reader
+   → Capture full APDU exchange
+   → Analyze in NFC tools
+
+4. ATTACK CONCLUSIONS
+   Phase 1: Emulation succeeds immediately
+   Phase 2: Emulation succeeds, lockout bypassable via UID rotation
+   Phase 3: Emulation gets challenge, cannot forge HMAC without secret
+   
+   → Only Phase 3 stops a Flipper Zero attack
+
+================================================================

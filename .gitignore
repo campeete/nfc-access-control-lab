@@ -35,3 +35,4 @@ Thumbs.db
 # Secrets
 secrets.h
 config.secret.*
+dashboard/backend/data/*.db

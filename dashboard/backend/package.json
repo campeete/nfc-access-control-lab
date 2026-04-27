@@ -1,0 +1,30 @@
+{
+  "name": "nfc-dashboard-backend",
+  "version": "1.0.0",
+  "description": "NFC Access Control Lab — Dashboard REST API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "NODE_ENV=development SKIP_AUTH=false node src/server.js",
+    "dev:noauth": "NODE_ENV=development SKIP_AUTH=true node src/server.js",
+    "test": "node tests/api.test.js"
+  },
+  "keywords": [
+    "nfc",
+    "security",
+    "access-control",
+    "dashboard"
+  ],
+  "author": "Cameron Peete",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "sql.js": "^1.14.1"
+  }
+}

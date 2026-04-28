@@ -36,3 +36,4 @@ Thumbs.db
 secrets.h
 config.secret.*
 dashboard/backend/data/*.db
+dashboard/backend/data/*.db
